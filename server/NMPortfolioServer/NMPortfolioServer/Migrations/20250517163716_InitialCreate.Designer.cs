@@ -4,12 +4,13 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using NMPortfolioServer.Models;
 
 #nullable disable
 
 namespace NMPortfolioServer.Migrations
 {
-    [DbContext(typeof(PersonDbContext))]
+    [DbContext(typeof(PortfolioDbContext))]
     [Migration("20250517163716_InitialCreate")]
     partial class InitialCreate
     {

@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NMPortfolioServer.Models;
 
@@ -10,9 +11,11 @@ using NMPortfolioServer.Models;
 namespace NMPortfolioServer.Migrations
 {
     [DbContext(typeof(PortfolioDbContext))]
-    partial class PersonDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250517200649_PortfolioEntries")]
+    partial class PortfolioEntries
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
