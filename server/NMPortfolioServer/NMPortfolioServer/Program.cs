@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using NMPortfolioServer.ApiModels;
 using NMPortfolioServer.common;
@@ -34,6 +35,8 @@ builder.Services.AddCors(options =>
                 .AllowAnyHeader();
         });
 });
+
+builder.Services.ConfigureHttpJsonOptions(options => options.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
 var app = builder.Build();
 app.UseCors("AllowAll");
@@ -251,27 +254,19 @@ app.MapPut("/PortfolioEntries/{id:int}/ThumbnailCarouselEntries/{thumbnailId:int
         return Results.NoContent();
     });
 
-app.MapDelete("/PortfolioEntries/{id:int}/ThumbnailCarouselEntries/{thumbnailId:int}",
-    async (int id, int thumbnailId, PortfolioDbContext context) =>
+app.MapDelete("/PortfolioEntries/ThumbnailCarouselEntries/{thumbnailId:int}",
+    async (int thumbnailId, PortfolioDbContext context) =>
     {
-        var portfolioEntry = await context.PortfolioEntries
-            .Include(x => x.ThumbnailCarouselEntries)
-            .FirstOrDefaultAsync(x => x.Id == id);
-
-        if (portfolioEntry == null)
-        {
-            return Results.NotFound();
-        }
-
-        var existingThumbnailCarouselEntry = portfolioEntry.ThumbnailCarouselEntries
-            .FirstOrDefault(x => x.Id == thumbnailId);
-
+        
+        var existingThumbnailCarouselEntry = await context.PortfolioThumbnailCarouselEntries
+            .FirstOrDefaultAsync(x => x.Id == thumbnailId);
+        
         if (existingThumbnailCarouselEntry == null)
         {
             return Results.NotFound();
         }
 
-        portfolioEntry.ThumbnailCarouselEntries.Remove(existingThumbnailCarouselEntry);
+        context.PortfolioThumbnailCarouselEntries.Remove(existingThumbnailCarouselEntry);
         await context.SaveChangesAsync();
 
         return Results.NoContent();

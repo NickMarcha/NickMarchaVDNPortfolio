@@ -18,9 +18,33 @@ export const postPortfolioEntriesPaginated = async (params: PaginationRequestPar
     return await fetchPaginated('/PortfolioEntries/Paginated', params, ApiShortPortfolioEntrySchema);
 }
 
-const fetchPaginated = async <TResponse extends ZodObject<any>> (path:string, paginationRequest:PaginationRequestParams ,responseSchema:TResponse) =>{
+export const getPortfolioEntry = async (id: number) => {
+    return await fetchValidated('/PortfolioEntries/' + id, ApiFullPortfolioEntrySchema, "Get");
+}
 
-    if(!PaginationRequestParamsSchema.safeParse(paginationRequest).success){
+export const createPortfolioEntry = async (entry: ApiFullPortfolioEntry) => {
+    return await fetchValidated('/PortfolioEntries/', ApiFullPortfolioEntrySchema, "Post", ApiFullPortfolioEntrySchema, entry);
+}
+
+export const updatePortfolioEntry = async (entry: ApiFullPortfolioEntry) => {
+    return await fetchValidated('/PortfolioEntries/' + entry.id, ApiFullPortfolioEntrySchema, "Put", ApiFullPortfolioEntrySchema, entry);
+}
+
+export const postPortFolioThumbnailCarouselEntry = async (entry: ApiPortfolioThumbnailCarouselEntry) => {
+    return await fetchValidated('/PortfolioEntries/' + entry.portfolioEntryId + '/ThumbnailCarouselEntries', ApiPortfolioThumbnailCarouselEntrySchema, "Post", ApiPortfolioThumbnailCarouselEntrySchema, entry);
+}
+
+export const updatePortFolioThumbnailCarouselEntry = async (entry: ApiPortfolioThumbnailCarouselEntry) => {
+    return await fetchValidated('/PortfolioEntries/ThumbnailCarouselEntries/' + entry.id, ApiPortfolioThumbnailCarouselEntrySchema, "Put", ApiPortfolioThumbnailCarouselEntrySchema, entry);
+}
+
+export const deletePortfolioThumbnailCarouselEntry = async (id: number) => {
+    return await fetchValidated('/PortfolioEntries/ThumbnailCarouselEntries/' + id, ApiPortfolioThumbnailCarouselEntrySchema, "Delete");
+}
+
+const fetchPaginated = async <TResponse extends ZodObject<any>>(path: string, paginationRequest: PaginationRequestParams, responseSchema: TResponse) => {
+
+    if (!PaginationRequestParamsSchema.safeParse(paginationRequest).success) {
         throw new Error('Request validation failed');
     }
 
@@ -41,14 +65,14 @@ const fetchPaginated = async <TResponse extends ZodObject<any>> (path:string, pa
     //validate the response
     const result = PaginatedResponseSchema.safeParse(responseBody);
 
-    if(!result.success){
+    if (!result.success) {
         throw new Error('Response validation failed 3: ' + result.error.message);
     }
 
     result.data.items = result.data.items.map((item: any) => {
         const pItem = responseSchema.safeParse(item);
 
-        if(!pItem.success){
+        if (!pItem.success) {
             throw new Error('Response validation failed 2: ' + pItem.error.message);
         }
         return pItem.data;
@@ -58,14 +82,13 @@ const fetchPaginated = async <TResponse extends ZodObject<any>> (path:string, pa
 }
 
 const fetchValidated = async <TRequest extends ZodObject<any>, TResponse extends ZodObject<any>>
-(path: string,  responseSchema:TResponse, method:RequestMethods = "Get", requestSchema?:TRequest, request?: z.infer<TRequest>) =>
-{
-    if(requestSchema === undefined && request !== undefined){
+(path: string, responseSchema: TResponse, method: RequestMethods = "Get", requestSchema?: TRequest, request?: z.infer<TRequest>) => {
+    if (requestSchema === undefined && request !== undefined) {
         throw new Error('Request schema is undefined, but request is defined');
     }
 
     //validate the request
-    if(requestSchema !== undefined  && !requestSchema.safeParse(request).success){
+    if (requestSchema !== undefined && !requestSchema.safeParse(request).success) {
         throw new Error('Request validation failed');
     }
 
@@ -85,10 +108,13 @@ const fetchValidated = async <TRequest extends ZodObject<any>, TResponse extends
 
     //validate the response
     const result = responseSchema.safeParse(responseBody);
-    if(requestSchema !== undefined  && !result.success){
+
+    if (!result.success) {
+        console.error("result.error", result);
         throw new Error('Response validation failed 1' + result.error.message);
     }
-    return result.data;
+
+    return result.data as z.infer<TResponse>;
 }
 
 
@@ -142,38 +168,44 @@ export type PaginationResponseParams<T> = {
     unfilteredTotalRows: number
 }
 
-type  RequestMethods = "Get"|"Head"|"Post"|"Put"|"Delete"|"Connect"|"Options"|"Trace"|"Patch";
+type  RequestMethods = "Get" | "Head" | "Post" | "Put" | "Delete" | "Connect" | "Options" | "Trace" | "Patch";
 
-const ApiPortfolioThumbnailCarouselEntry = z.object({
-    id: z.number().int(),
+const ApiPortfolioThumbnailCarouselEntrySchema = z.object({
+    id: z.number().int().optional(),
     portfolioEntryId: z.number().int(),
     ordinal: z.number().int(),
     imageUrl: z.string(),
     description: z.string().nullable(),
 });
 
-export type ApiPortfolioThumbnailCarouselEntry = z.infer<typeof ApiPortfolioThumbnailCarouselEntry>;
+export type ApiPortfolioThumbnailCarouselEntry = z.infer<typeof ApiPortfolioThumbnailCarouselEntrySchema>;
 
+export const PortfolioLongDescriptionSchema = z.enum(['Text', 'Markdown', 'Html']);
+//export type PortfolioLongDescriptionType = z.infer<typeof PortfolioLongDescriptionSchema>;
 
-const ApiFullPortfolioEntrySchema = z.object({
-    id: z.number().int(),
-    ordinal : z.number().int(),
+export const ApiFullPortfolioEntrySchema = z.object({
+    id: z.number().int().optional(),
+    ordinal: z.number().int(),
     enabled: z.boolean(),
     shortTitle: z.string(),
     shortDescription: z.string().nullable(),
     thumbnailUrl: z.string().nullable(),
     longTitle: z.string(),
     longDescription: z.string().nullable(),
-    longDescriptionType: z.enum(['Text', 'Markdown','Html']),
-    thumbnailCarouselEntries: z.array(ApiPortfolioThumbnailCarouselEntry),
+    longDescriptionType: PortfolioLongDescriptionSchema,
+    thumbnailCarouselEntries: z.array(ApiPortfolioThumbnailCarouselEntrySchema),
 });
+
+
 export type ApiFullPortfolioEntry = z.infer<typeof ApiFullPortfolioEntrySchema>;
 
-const ApiShortPortfolioEntrySchema = z.object({
+export const ApiShortPortfolioEntrySchema = z.object({
     id: z.number().int(),
-    ordinal : z.number().int(),
+    ordinal: z.number().int(),
     enabled: z.boolean(),
     shortTitle: z.string(),
     shortDescription: z.string().nullable(),
     thumbnailUrl: z.string().nullable(),
 });
+
+export type ApiShortPortfolioEntry = z.infer<typeof ApiShortPortfolioEntrySchema>;

@@ -1,27 +1,36 @@
 //import { Link } from '@tanstack/react-router'
+import {atom, useAtom} from "jotai";
+import {Label} from "@/components/ui/label"
+import {Switch} from "@/components/ui/switch"
+
+export const AdminModeAtom = atom(true);
 
 export default function Header() {
-  return (
-      <header className="flex gap-2 bg-yellow-600 text-white justify-between items-center">
-          <nav className="flex flex-row items-center">
-              <svg width="70" height="70" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                  <g fill="#8B1A1A" stroke="black" stroke-width="1">
-                      <path d="M70,50
-             C80,30 60,20 50,25
-             C40,20 30,25 20,35
-             L10,30 L15,50 L10,70 L20,65
-             C30,75 40,80 50,75
-             C60,80 80,70 70,50 Z" />
-                      <circle cx="60" cy="45" r="5" fill="white" />
-                      <circle cx="62" cy="45" r="2" fill="black" />
-                      <line x1="40" y1="40" x2="35" y2="30" stroke="black" stroke-width="2" />
-                      <line x1="37" y1="43" x2="30" y2="35" stroke="black" stroke-width="2" />
-                      <line x1="34" y1="46" x2="27" y2="40" stroke="black" stroke-width="2" />
-                  </g>
-              </svg>
 
-              <p className="text-2xl font-bold">Nick Marcha Portfolio</p>
-          </nav>
-      </header>
-  )
+    const [adminMode, setAdminMode] = useAtom(AdminModeAtom);
+    return (
+        <header className="flex gap-2 bg-yellow-600 text-white justify-between items-center">
+            <nav className="flex flex-row items-center">
+
+                <img alt="Modal Image"
+                     src={"/favicon.ico"}/>
+
+                <p className="text-2xl font-bold ml-2">Nick Marcha Portfolio</p>
+            </nav>
+
+            <div className="flex flex-row items-center mr-2">
+                <div className="flex items-center space-x-2 ">
+                    <Switch id="admin-mode" onCheckedChange=
+                        {
+                            (checked) => {
+                                setAdminMode(checked);
+                            }
+                        }
+                            checked={adminMode}
+                    />
+                    <Label htmlFor="admin-mode">Admin Mode</Label>
+                </div>
+            </div>
+        </header>
+    )
 }

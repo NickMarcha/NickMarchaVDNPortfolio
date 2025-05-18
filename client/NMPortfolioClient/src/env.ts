@@ -11,6 +11,7 @@ export const env = createEnv({
 
   client: {
     VITE_PORTFOLIO_API_URL: z.string().url(),
+    VITE_TINYMCE_API_KEY: z.string(),
   },
 
   /**
