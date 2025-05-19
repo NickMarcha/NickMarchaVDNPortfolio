@@ -1,4 +1,4 @@
-import {createFileRoute, Link} from '@tanstack/react-router'
+import {createFileRoute} from '@tanstack/react-router'
 import {
     QueryClient,
     QueryClientProvider,
@@ -6,6 +6,7 @@ import {
 import {SelectedPortfolioEntry} from "@/components/SelectedPortfolioEntry.tsx";
 /*import {TestPing} from "@/components/PingTest.tsx";*/
 import {PortfolioEntries} from "@/components/PortfolioEntriesListing.tsx";
+import {attachDebugMode} from "@/DebugStore.ts";
 
 
 export const Route = createFileRoute('/')({
@@ -17,17 +18,10 @@ const queryClient = new QueryClient()
 function App() {
     return (
         <QueryClientProvider client={queryClient}>
-            <div className="text-center">
+            <div className="bg-teal-700 flex-1">
                 {/*<TestPing/>*/}
                 <PortfolioEntries/>
                 <SelectedPortfolioEntry/>
-
-                <Link to={'/test'} search={{
-                    name: 'World',
-                }} className="text-[#61dafb] hover:underline">
-                    Go to /test
-                </Link>
-
             </div>
         </QueryClientProvider>
     )
@@ -35,3 +29,4 @@ function App() {
 
 
 
+attachDebugMode(window);

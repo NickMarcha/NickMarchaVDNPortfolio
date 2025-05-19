@@ -44,17 +44,20 @@ export function PortfolioEntries() {
 
     return (
         <div>
-            <div className={"flex flex-row justify-center"}>
-                <Label className={"mr-2"}>Sort By</Label>
+            <div className={"flex flex-row justify-center p-2"}>
+                <Label
+                    className="pr-2 bg-white rounded-l-md rounded-r-none border border-r-0 border-gray-300 flex items-center">
+                    Sorted By
+                </Label>
                 <Select
                     value={requestParams.sorting[0]?.id as sortingOptions}
-                    onValueChange={
-                        (value) => {
-                            handleSortingChange(value as sortingOptions, "asc");
-                        }
-                    }>
-                    <SelectTrigger className="w-[180px]">
-                        <SelectValue  id={'sorting'} placeholder="Sort Order"/>
+                    onValueChange={(value) => {
+                        handleSortingChange(value as sortingOptions, "asc");
+                    }}
+                >
+                    <SelectTrigger
+                        className="w-[180px] bg-white rounded-r-md rounded-l-none border border-l-0 border-gray-300">
+                        <SelectValue id={'sorting'} placeholder="Sort Order"/>
                     </SelectTrigger>
                     <SelectContent>
                         <SelectGroup>
@@ -66,14 +69,14 @@ export function PortfolioEntries() {
                 </Select>
 
             </div>
-            <div className={"flex flex-row justify-center"}>
+            <div className="flex flex-wrap justify-center gap-4">
                 {isPending && <PortfolioCardSkeleton/>}
                 {error && <p>Error: {error.message}</p>}
                 {data && <>
                     {data.items.map((item, index) => (
                         <PortfolioCard key={index} shortPortfolio={item}/>
                     ))
-                }
+                    }
                     <CreatePortfolioCard/>
                 </>
                 }

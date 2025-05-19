@@ -1,21 +1,14 @@
 import {useRef} from 'react';
-import {Editor} from '@tinymce/tinymce-react';
+import {Editor, type IAllProps} from '@tinymce/tinymce-react';
 import {env} from "@/env";
 
-export function RichTextEditor() {
+export function RichTextEditor(props:IAllProps) {
     const editorRef = useRef(null);
- /*   const log = () => {
-        if (editorRef.current) {
-            console.log(editorRef.current.getContent());
-        }
-    };
-*/
+
+
     return (
         <>
             <Editor
-                onBlur={(value) =>{
-                    console.log('Editor blurred', value);
-                }}
                 apiKey={env.VITE_TINYMCE_API_KEY}
                 onInit={(_evt, editor) => editorRef.current = editor}
                 initialValue="<p>This is the initial content of the editor.</p>"
@@ -33,9 +26,8 @@ export function RichTextEditor() {
                         'removeformat | help',
                     content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }'
                 }}
+                {...props}
             />
-           {/* <button onClick={log}>Log editor content</button>*/}
         </>
-    )
-        ;
+    );
 }

@@ -34,12 +34,20 @@ export const postPortFolioThumbnailCarouselEntry = async (entry: ApiPortfolioThu
     return await fetchValidated('/PortfolioEntries/' + entry.portfolioEntryId + '/ThumbnailCarouselEntries', ApiPortfolioThumbnailCarouselEntrySchema, "Post", ApiPortfolioThumbnailCarouselEntrySchema, entry);
 }
 
-export const updatePortFolioThumbnailCarouselEntry = async (entry: ApiPortfolioThumbnailCarouselEntry) => {
-    return await fetchValidated('/PortfolioEntries/ThumbnailCarouselEntries/' + entry.id, ApiPortfolioThumbnailCarouselEntrySchema, "Put", ApiPortfolioThumbnailCarouselEntrySchema, entry);
+export const updatePortFolioThumbnailCarouselEntry = async (thumbnailEntry: ApiPortfolioThumbnailCarouselEntry) => {
+    console.debug("Updating PortFolioThumbnailCarouselEntry", thumbnailEntry);
+    return await fetchValidated('/PortfolioEntries/' + thumbnailEntry.portfolioEntryId + '/ThumbnailCarouselEntries/' + thumbnailEntry.id, ApiPortfolioThumbnailCarouselEntrySchema, "Put", ApiPortfolioThumbnailCarouselEntrySchema, thumbnailEntry);
 }
 
 export const deletePortfolioThumbnailCarouselEntry = async (id: number) => {
-    return await fetchValidated('/PortfolioEntries/ThumbnailCarouselEntries/' + id, ApiPortfolioThumbnailCarouselEntrySchema, "Delete");
+    return await fetch(env.VITE_PORTFOLIO_API_URL + '/PortfolioEntries/ThumbnailCarouselEntries/' + id, {
+        method: 'DELETE'
+    }).then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response;
+    });
 }
 
 const fetchPaginated = async <TResponse extends ZodObject<any>>(path: string, paginationRequest: PaginationRequestParams, responseSchema: TResponse) => {
@@ -177,6 +185,7 @@ const ApiPortfolioThumbnailCarouselEntrySchema = z.object({
     imageUrl: z.string(),
     description: z.string().nullable(),
 });
+
 
 export type ApiPortfolioThumbnailCarouselEntry = z.infer<typeof ApiPortfolioThumbnailCarouselEntrySchema>;
 

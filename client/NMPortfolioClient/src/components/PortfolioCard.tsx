@@ -1,4 +1,4 @@
-import type {ApiShortPortfolioEntry} from "@/portfolioApi.ts";
+import {type ApiShortPortfolioEntry, createPortfolioEntry} from "@/portfolioApi.ts";
 import {
     Card,
     CardContent,
@@ -11,15 +11,18 @@ import {AspectRatio} from "@/components/ui/aspect-ratio"
 import {SelectedPortfolioIdAtom} from "@/components/SelectedPortfolioEntry.tsx";
 import {useAtomValue, useSetAtom} from "jotai";
 import {AdminModeAtom} from "@/components/Header.tsx";
+import {useQueryClient} from "@tanstack/react-query";
 
 export function PortfolioCard({shortPortfolio}: { shortPortfolio: ApiShortPortfolioEntry }) {
 
     const setSelectedPortfolioEntry = useSetAtom(SelectedPortfolioIdAtom);
 
     return (
-        <Card className="w-[350px] m-2 transition-all duration-100 hover:outline-2 hover:outline-black hover:bg-gray-200" onClick={() => setSelectedPortfolioEntry(shortPortfolio.id)}>
+        <Card
+            className="w-[350px] m-2 transition-all duration-100 hover:outline-2 hover:outline-black hover:bg-gray-200 bg-cyan-100 min-w-xs"
+            onClick={() => setSelectedPortfolioEntry(shortPortfolio.id)}>
             <CardHeader>
-                <CardTitle>{shortPortfolio.shortTitle}</CardTitle>
+                <CardTitle className={"text-2xl"}>{shortPortfolio.shortTitle}</CardTitle>
 
             </CardHeader>
             <CardContent>
@@ -40,12 +43,35 @@ export function PortfolioCard({shortPortfolio}: { shortPortfolio: ApiShortPortfo
 
 export function CreatePortfolioCard() {
     const adminMode = useAtomValue(AdminModeAtom);
+    const queryClient = useQueryClient()
+
+    function handleCreateNewPortfolioEntry() {
+        createPortfolioEntry({
+            enabled: false,
+            ordinal: 0,
+            shortTitle: "New Portfolio Entry",
+            shortDescription: null,
+            thumbnailUrl: null,
+            longTitle: "New Portfolio Entry",
+            longDescription: null,
+            longDescriptionType: "Text",
+            thumbnailCarouselEntries: [],
+        }).then((response) => {
+            console.log(response);
+            queryClient.invalidateQueries({
+                queryKey: ['portfolioEntries'],
+            });
+        }).catch(console.error);
+    }
 
     if (!adminMode) {
         return null;
     }
     return (
-        <Card className="w-[350px] m-2 transition-all duration-100 hover:outline-2 hover:outline-black hover:bg-green-300-200">
+        <Card
+            className="w-[350px] m-2 transition-all duration-100 hover:outline-2 hover:outline-black hover:bg-green-300-200"
+            onClick={handleCreateNewPortfolioEntry}
+        >
             <CardHeader>
                 <CardTitle>Create new entry</CardTitle>
             </CardHeader>
@@ -73,14 +99,15 @@ export function CreatePortfolioCard() {
 
 export function PortfolioCardSkeleton() {
     return (
-        <Card className="w-[350px] m-2 transition-all duration-100 hover:outline-2 hover:outline-black hover:bg-gray-200">
+        <Card
+            className="w-[350px] m-2 transition-all duration-100 hover:outline-2 hover:outline-black hover:bg-gray-200">
             <CardHeader>
                 <CardTitle>Loading...</CardTitle>
             </CardHeader>
             <CardContent>
                 <AspectRatio ratio={4 / 3}
-                                className="bg-muted animate-pulse">
-                        <div className="w-full h-full bg-gray-300"/>
+                             className="bg-muted animate-pulse">
+                    <div className="w-full h-full bg-gray-300"/>
                 </AspectRatio>
             </CardContent>
             <CardFooter className="flex justify-between">

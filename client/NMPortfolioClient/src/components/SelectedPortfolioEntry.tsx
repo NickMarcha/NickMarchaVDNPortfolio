@@ -1,9 +1,12 @@
 import {useQuery} from "@tanstack/react-query";
 import {
     type ApiFullPortfolioEntry,
-    type ApiPortfolioThumbnailCarouselEntry,
+    type ApiPortfolioThumbnailCarouselEntry, deletePortfolioThumbnailCarouselEntry,
     getPortfolioEntry,
-    PortfolioLongDescriptionSchema, postPortFolioThumbnailCarouselEntry, updatePortFolioThumbnailCarouselEntry
+    PortfolioLongDescriptionSchema,
+    postPortFolioThumbnailCarouselEntry,
+    updatePortfolioEntry,
+    updatePortFolioThumbnailCarouselEntry
 } from "@/portfolioApi.ts";
 import {useAtom, atom, useAtomValue} from "jotai";
 import {AdminModeAtom} from "@/components/Header.tsx";
@@ -27,11 +30,13 @@ import {
     CarouselNext,
     CarouselPrevious,
 } from "@/components/ui/carousel"
-import {Card, CardContent} from "@/components/ui/card"
 import {Button} from "@/components/ui/button.tsx";
 import {Switch} from "@/components/ui/switch.tsx";
 import {toast} from "sonner"
 import {Textarea} from "@/components/ui/textarea"
+import {Progress} from "@/components/ui/progress.tsx";
+import YoutubeEmbed from "@/components/YoutubeEmbed.tsx";
+import "./TinyMCEStyles.css";
 
 export const SelectedPortfolioIdAtom = atom<null | number>(null);
 
@@ -64,8 +69,13 @@ export function SelectedPortfolioEntry() {
 
             onClick={handleClose}
         >
+            {isFetching && (
+                <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center">
+                    <Progress className="h-4 w-4"/>
+                </div>
+            )}
             <div
-                className="bg-white rounded-2xl shadow-lg p-6 max-w-3xl w-full relative"
+                className="bg-white rounded-2xl shadow-lg p-6 max-w-3xl w-full relative max-h-[90vh] overflow-y-auto"
                 onClick={(e) => e.stopPropagation()}
             >
                 {isPending ? (
@@ -106,7 +116,17 @@ function EditFullContent({data}: { data: ApiFullPortfolioEntry }) {
                 return <div>Markdown Not suppoerted</div>
             case "Html":
                 return <>
-                    <RichTextEditor/>
+                    <RichTextEditor
+                        initialValue={apiFullPortfolioEntry.longDescription ?? ""}
+                        onEditorChange={
+                            (content) => {
+                                setApiFullPortfolioEntry((prev) => ({
+                                    ...prev,
+                                    longDescription: content
+                                }))
+                            }
+                        }
+                    />
                 </>
             case "Text":
                 return <>
@@ -140,7 +160,8 @@ function EditFullContent({data}: { data: ApiFullPortfolioEntry }) {
             }
         ).catch(console.error)
     }
-    function handleUpdateThumbnail(ut:ApiPortfolioThumbnailCarouselEntry) {
+
+    function handleUpdateThumbnail(ut: ApiPortfolioThumbnailCarouselEntry) {
         updatePortFolioThumbnailCarouselEntry(ut).then((res) => {
                 console.log("Thumbnail updated successfully", res);
                 toast("Thumbnail updated successfully");
@@ -148,13 +169,32 @@ function EditFullContent({data}: { data: ApiFullPortfolioEntry }) {
                     ...prev,
                     thumbnailCarouselEntries: prev.thumbnailCarouselEntries.map((entry) => {
                         if (entry.id === ut.id) {
-                            return ut;
+                            return res;
                         }
                         return entry;
-                    })
+                    }).sort((a, b) => a.ordinal - b.ordinal),
                 }))
             }
         ).catch(console.error)
+    }
+
+    function handleSave() {
+        updatePortfolioEntry(apiFullPortfolioEntry).then((res) => {
+            console.log("Portfolio entry updated successfully", res);
+            toast("Portfolio entry updated successfully");
+            setApiFullPortfolioEntry(res);
+        }).catch(console.error);
+    }
+
+    function handleDeleteThumbnail(id: number) {
+        deletePortfolioThumbnailCarouselEntry(id).then((res) => {
+            console.log("Thumbnail deleted successfully", res);
+            toast("Thumbnail deleted successfully");
+            setApiFullPortfolioEntry((prev) => ({
+                ...prev,
+                thumbnailCarouselEntries: prev.thumbnailCarouselEntries.filter((entry) => entry.id !== id)
+            }))
+        }).catch(console.error);
     }
 
 
@@ -274,33 +314,48 @@ function EditFullContent({data}: { data: ApiFullPortfolioEntry }) {
                     <Button
                         disabled={index === 0}
                         onClick={() => {
-                            setApiFullPortfolioEntry((prev) => {
-                                const entries = [...prev.thumbnailCarouselEntries];
+                            const entries = [...apiFullPortfolioEntry.thumbnailCarouselEntries];
 
-                                entries[index].ordinal = entries[index].ordinal - 1;
-                                entries[index - 1].ordinal = entries[index - 1].ordinal + 1;
-                                return {
-                                    ...prev,
-                                    thumbnailCarouselEntries: entries.sort((a, b) => a.ordinal - b.ordinal)
-                                }
-                            })
+                            entries[index].ordinal = index - 1;
+
+                            entries[index - 1].ordinal = index;
+
+                            handleUpdateThumbnail(entries[index]);
+                            handleUpdateThumbnail(entries[index - 1]);
+
                         }}
                     >↑</Button>
                     <Button
                         disabled={index === apiFullPortfolioEntry.thumbnailCarouselEntries.length - 1}
                         onClick={() => {
-                            setApiFullPortfolioEntry((prev) => {
-                                const entries = [...prev.thumbnailCarouselEntries];
 
-                                entries[index].ordinal = entries[index].ordinal + 1;
-                                entries[index + 1].ordinal = entries[index + 1].ordinal - 1;
-                                return {
-                                    ...prev,
-                                    thumbnailCarouselEntries: entries.sort((a, b) => a.ordinal - b.ordinal)
-                                }
-                            })
+                            const entries = [...apiFullPortfolioEntry.thumbnailCarouselEntries];
+
+                            entries[index].ordinal = index + 1;
+
+                            entries[index + 1].ordinal = index;
+
+                            handleUpdateThumbnail(entries[index]);
+                            handleUpdateThumbnail(entries[index + 1]);
+
                         }}
                     >↓</Button>
+                    <Button
+                        className={"bg-green-700"}
+                        onClick={() => {
+                            handleUpdateThumbnail(v);
+                        }}
+                    >
+                        S
+                    </Button>
+                    <Button
+                        className={"bg-red-700"}
+                        onClick={() => {
+                            handleDeleteThumbnail(v.id ?? -1);
+                        }}
+                    >
+                        D
+                    </Button>
                 </div>
             ))}
 
@@ -357,7 +412,9 @@ function EditFullContent({data}: { data: ApiFullPortfolioEntry }) {
                             }
                     />
                 </div>
-                <Button>
+                <Button
+                    onClick={() => handleSave()}
+                >
                     Save
                 </Button>
             </div>
@@ -373,12 +430,36 @@ function RenderFullContent({apiFullPortfolioEntry}: { apiFullPortfolioEntry: Api
             case "Markdown":
                 return <div>Markdown Not suppoerted</div>
             case "Html":
-                return <div dangerouslySetInnerHTML={{__html: apiFullPortfolioEntry.longDescription ?? ""}}/>
+                return <div className={"tinymce-content"} dangerouslySetInnerHTML={{__html: apiFullPortfolioEntry.longDescription ?? ""}}/>
             case "Text":
                 return <p>{apiFullPortfolioEntry.longDescription}</p>
             default:
                 return <div>Unknown</div>
         }
+    }
+
+    function renderThumbnailOrEmbed(url: string) {
+        if (url.includes("youtube.com") || url.includes("youtu.be")) {
+            const videoId = url.split(/(?:v=|\/)([0-9A-Za-z_-]{11})/)[
+                1
+                ];
+            if (videoId) {
+                return (
+                    <div className="w-full">
+                        <YoutubeEmbed embedId={videoId}/>
+                    </div>
+                );
+            }
+        }
+
+
+        return (
+            <img
+                src={url}
+                alt={"Thumbnail"}
+                className="w-full h-auto object-contain"
+            />
+        )
     }
 
     return (
@@ -398,11 +479,7 @@ function RenderFullContent({apiFullPortfolioEntry}: { apiFullPortfolioEntry: Api
                             {apiFullPortfolioEntry.thumbnailCarouselEntries.map((v, index) => (
                                 <CarouselItem key={index} className="w-full flex justify-center">
                                     <div className="w-full">
-                                        <img
-                                            src={v.imageUrl}
-                                            alt={v.description ?? "Thumbnail"}
-                                            className="w-full h-auto object-contain"
-                                        />
+                                        {renderThumbnailOrEmbed(v.imageUrl)}
                                         <p className="text-center mt-2 bg-gray-200 text-gray-700 w-fit mx-auto p-1 rounded-lg italic">
                                             {v.description}
                                         </p>
@@ -410,8 +487,13 @@ function RenderFullContent({apiFullPortfolioEntry}: { apiFullPortfolioEntry: Api
                                 </CarouselItem>
                             ))}
                         </CarouselContent>
-                        <CarouselPrevious className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-full" />
-                        <CarouselNext className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-full" />
+                        {apiFullPortfolioEntry.thumbnailCarouselEntries.length > 1 &&
+                            <>
+                                <CarouselPrevious
+                                    className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-full"/>
+                                <CarouselNext className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-full"/>
+                            </>
+                        }
                     </Carousel>
                 </div>
             )}

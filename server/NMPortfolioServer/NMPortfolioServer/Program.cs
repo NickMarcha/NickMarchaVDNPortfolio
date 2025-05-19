@@ -250,8 +250,9 @@ app.MapPut("/PortfolioEntries/{id:int}/ThumbnailCarouselEntries/{thumbnailId:int
             existingThumbnailCarouselEntry);
 
         await context.SaveChangesAsync();
-
-        return Results.NoContent();
+        
+        
+        return Results.Ok((ApiPortfolioThumbnailCarouselEntry)existingThumbnailCarouselEntry);
     });
 
 app.MapDelete("/PortfolioEntries/ThumbnailCarouselEntries/{thumbnailId:int}",

@@ -93,7 +93,7 @@ public class ApiPortfolioThumbnailCarouselEntry
         return new ApiPortfolioThumbnailCarouselEntry
         {
             Id = portfolioThumbnailCarouselEntry.Id,
-            PortfolioEntryId = portfolioThumbnailCarouselEntry.Ordinal,
+            PortfolioEntryId = portfolioThumbnailCarouselEntry.PortfolioEntryId,
             Ordinal = portfolioThumbnailCarouselEntry.Ordinal,
             ImageUrl = portfolioThumbnailCarouselEntry.ImageUrl,
             Description = portfolioThumbnailCarouselEntry.Description,
