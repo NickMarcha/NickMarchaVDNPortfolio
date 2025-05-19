@@ -1,7 +1,8 @@
 import {useQuery} from "@tanstack/react-query";
 import {
     type ApiFullPortfolioEntry,
-    type ApiPortfolioThumbnailCarouselEntry, deletePortfolioThumbnailCarouselEntry,
+    type ApiPortfolioThumbnailCarouselEntry,
+    deletePortfolioThumbnailCarouselEntry,
     getPortfolioEntry,
     PortfolioLongDescriptionSchema,
     postPortFolioThumbnailCarouselEntry,
@@ -71,7 +72,7 @@ export function SelectedPortfolioEntry() {
         >
             {isFetching && (
                 <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center">
-                    <Progress className="h-4 w-4"/>
+                    <Progress value={50} className="h-4 w-4"/>
                 </div>
             )}
             <div
@@ -289,78 +290,108 @@ function EditFullContent({data}: { data: ApiFullPortfolioEntry }) {
             <Label htmlFor={"thumbnailCarouselEntries"}>Thumbnail Carousel Entries</Label>
 
             {apiFullPortfolioEntry.thumbnailCarouselEntries.map((v, index) => (
-                <div key={index} className={"outline-1 flex flex-row"}>
+                <div key={index} className={"outline-1 flex flex-row w-full mt-4 p-2 bg-gray-100"}>
                     {/* <Label htmlFor={`thumbnailCarouselEntries[${index}].imageUrl`}>Thumbnail URL</Label>*/}
-                    <Input
-                        id={`thumbnailCarouselEntries[${index}].imageUrl`}
-                        value={v.imageUrl}
-                        onChange={
-                            (event) => {
-                                setApiFullPortfolioEntry((prev) => ({
-                                    ...prev,
-                                    thumbnailCarouselEntries: prev.thumbnailCarouselEntries.map((entry, i) => {
-                                        if (i === index) {
-                                            return {
-                                                ...entry,
-                                                imageUrl: event.target.value
+                    <div className="flex flex-col flex-1">
+                        <Input
+                            id={`thumbnailCarouselEntries[${index}].imageUrl`}
+                            value={v.imageUrl}
+                            onChange={
+                                (event) => {
+                                    setApiFullPortfolioEntry((prev) => ({
+                                        ...prev,
+                                        thumbnailCarouselEntries: prev.thumbnailCarouselEntries.map((entry, i) => {
+                                            if (i === index) {
+                                                return {
+                                                    ...entry,
+                                                    imageUrl: event.target.value
+                                                }
                                             }
-                                        }
-                                        return entry;
-                                    })
-                                }))
+                                            return entry;
+                                        })
+                                    }))
+                                }
                             }
-                        }
-                    />
-                    <Button
-                        disabled={index === 0}
-                        onClick={() => {
-                            const entries = [...apiFullPortfolioEntry.thumbnailCarouselEntries];
+                        />
 
-                            entries[index].ordinal = index - 1;
+                        <Input
+                            id={`thumbnailCarouselEntries[${index}].description`}
+                            value={v.description ?? ""}
+                            placeholder={"Description"}
+                            onChange={
+                                (event) => {
+                                    setApiFullPortfolioEntry((prev) => ({
+                                        ...prev,
+                                        thumbnailCarouselEntries: prev.thumbnailCarouselEntries.map((entry, i) => {
+                                            if (i === index) {
+                                                return {
+                                                    ...entry,
+                                                    description: event.target.value
+                                                }
+                                            }
+                                            return entry;
+                                        })
+                                    }))
+                                }
+                            }
+                        />
+                    </div>
 
-                            entries[index - 1].ordinal = index;
+                    <div className={"flex flex-col"}>
+                        <Button
+                            disabled={index === 0}
+                            onClick={() => {
+                                const entries = [...apiFullPortfolioEntry.thumbnailCarouselEntries];
 
-                            handleUpdateThumbnail(entries[index]);
-                            handleUpdateThumbnail(entries[index - 1]);
+                                entries[index].ordinal = index - 1;
 
-                        }}
-                    >↑</Button>
-                    <Button
-                        disabled={index === apiFullPortfolioEntry.thumbnailCarouselEntries.length - 1}
-                        onClick={() => {
+                                entries[index - 1].ordinal = index;
 
-                            const entries = [...apiFullPortfolioEntry.thumbnailCarouselEntries];
+                                handleUpdateThumbnail(entries[index]);
+                                handleUpdateThumbnail(entries[index - 1]);
 
-                            entries[index].ordinal = index + 1;
+                            }}
+                        >↑</Button>
 
-                            entries[index + 1].ordinal = index;
+                        <Button
+                            disabled={index === apiFullPortfolioEntry.thumbnailCarouselEntries.length - 1}
+                            onClick={() => {
 
-                            handleUpdateThumbnail(entries[index]);
-                            handleUpdateThumbnail(entries[index + 1]);
+                                const entries = [...apiFullPortfolioEntry.thumbnailCarouselEntries];
 
-                        }}
-                    >↓</Button>
-                    <Button
-                        className={"bg-green-700"}
-                        onClick={() => {
-                            handleUpdateThumbnail(v);
-                        }}
-                    >
-                        S
-                    </Button>
-                    <Button
-                        className={"bg-red-700"}
-                        onClick={() => {
-                            handleDeleteThumbnail(v.id ?? -1);
-                        }}
-                    >
-                        D
-                    </Button>
+                                entries[index].ordinal = index + 1;
+
+                                entries[index + 1].ordinal = index;
+
+                                handleUpdateThumbnail(entries[index]);
+                                handleUpdateThumbnail(entries[index + 1]);
+
+                            }}
+                        >↓</Button>
+                    </div>
+                    <div className={"flex flex-col"}>
+                        <Button
+                            className={"bg-green-700"}
+                            onClick={() => {
+                                handleUpdateThumbnail(v);
+                            }}
+                        >
+                            S
+                        </Button>
+                        <Button
+                            className={"bg-red-700"}
+                            onClick={() => {
+                                handleDeleteThumbnail(v.id ?? -1);
+                            }}
+                        >
+                            D
+                        </Button>
+                    </div>
                 </div>
             ))}
 
             <div
-                className={"bg-gray-400 p-2 rounded-2xl text-white"}
+                className={"bg-gray-100 p-2 rounded-2xl mt-4"}
             >
                 <p>New Carousel Thumbnail Entry</p>
 
@@ -430,7 +461,8 @@ function RenderFullContent({apiFullPortfolioEntry}: { apiFullPortfolioEntry: Api
             case "Markdown":
                 return <div>Markdown Not suppoerted</div>
             case "Html":
-                return <div className={"tinymce-content"} dangerouslySetInnerHTML={{__html: apiFullPortfolioEntry.longDescription ?? ""}}/>
+                return <div className={"tinymce-content"}
+                            dangerouslySetInnerHTML={{__html: apiFullPortfolioEntry.longDescription ?? ""}}/>
             case "Text":
                 return <p>{apiFullPortfolioEntry.longDescription}</p>
             default:

@@ -26,7 +26,7 @@ export function PortfolioCard({shortPortfolio}: { shortPortfolio: ApiShortPortfo
 
             </CardHeader>
             <CardContent>
-                <AspectRatio ratio={4 / 3} className="bg-muted">
+                <AspectRatio ratio={4 / 3} className="">
                     <img
                         className="w-full h-full"
                         src={shortPortfolio.thumbnailUrl ?? undefined}

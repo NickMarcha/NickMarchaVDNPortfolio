@@ -81,7 +81,7 @@ export function PortfolioEntries() {
                 </>
                 }
             </div>
-            {isFetching && <Progress value={50} className="w-[60%]"/>}
+            {isFetching && <Progress value={50}/>}
         </div>
     )
 }
