@@ -1,0 +1,23 @@
+version: "3.9"
+
+services:
+  backend:
+    build:
+      context: ./server/NMPortfolioServer/NMPortfolioServer
+      dockerfile: Dockerfile
+    ports:
+      - "5000:80" # Map container port 80 (ASP.NET default) to host port 5000
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    depends_on:
+      - frontend
+
+  frontend:
+    build:
+      context: ./client/NMPortfolioClient
+      dockerfile: Dockerfile
+      args:
+        VITE_TINYMCE_API_KEY: "${VITE_TINYMCE_API_KEY}"
+        VITE_PORTFOLIO_API_URL: "${VITE_PORTFOLIO_API_URL}"
+    ports:
+      - "3000:80" # Serving built static files on port 80 inside container
