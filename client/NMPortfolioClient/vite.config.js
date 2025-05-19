@@ -8,6 +8,9 @@ import { resolve } from "node:path";
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [TanStackRouterVite({ autoCodeSplitting: true }), viteReact(), tailwindcss()],
+  preview:{
+    allowedHosts:["localhost", ".localhost","portfolio2.nickmarcha.com"]
+  },
   test: {
     globals: true,
     environment: "jsdom",
